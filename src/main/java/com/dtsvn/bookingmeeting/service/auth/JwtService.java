@@ -1,5 +1,6 @@
 package com.dtsvn.bookingmeeting.service.auth;
 
+import com.dtsvn.bookingmeeting.domain.enumeration.Role;
 import com.dtsvn.bookingmeeting.domain.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -33,6 +34,26 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public Role extractRole(String token) {
+        return extractClaim(token, claims -> {
+            Object roleObj = claims.get("role");
+            if (roleObj != null) {
+                return Role.valueOf(roleObj.toString());
+            }
+            return null;
+        });
+    }
+
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> {
+            Object userIdObj = claims.get("userId");
+            if (userIdObj != null) {
+                return Long.valueOf(userIdObj.toString());
+            }
+            return null;
+        });
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

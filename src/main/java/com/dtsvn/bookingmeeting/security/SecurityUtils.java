@@ -1,123 +1,97 @@
 package com.dtsvn.bookingmeeting.security;
 
+import com.dtsvn.bookingmeeting.domain.user.User;
+import com.dtsvn.bookingmeeting.repository.user.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.ClaimAccessor;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.stream.Stream;
+import org.springframework.stereotype.Component;
 
 /**
- * Utility class for Spring Security.
+ * Utility class for security-related operations.
  */
-public final class SecurityUtils {
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class SecurityUtils {
 
-    public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
-
-    public static final String AUTHORITIES_CLAIM = "auth";
-
-    public static final String USER_ID_CLAIM = "userId";
-
-    private SecurityUtils() {}
+    private final UserRepository userRepository;
 
     /**
-     * Get the login of the current user.
+     * Get the current authenticated user from SecurityContext.
+     * Note: In this project, the username in SecurityContext is actually the user's email.
      *
-     * @return the login of the current user.
+     * @return the current authenticated user
+     * @throws IllegalStateException if user is not authenticated or not found
      */
-    public static Optional<String> getCurrentUserLogin() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
-    }
-
-    private static String extractPrincipal(Authentication authentication) {
-        if (authentication == null) {
-            return null;
-        } else if (authentication.getPrincipal() instanceof UserDetails springSecurityUser) {
-            return springSecurityUser.getUsername();
-        } else if (authentication.getPrincipal() instanceof Jwt jwt) {
-            return jwt.getSubject();
-        } else if (authentication.getPrincipal() instanceof String s) {
-            return s;
+    public User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
         }
-        return null;
+        
+        String userEmail = authentication.getName(); // This is actually the email
+        log.debug("Getting current authenticated user with email: {}", userEmail);
+        
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found with email: " + userEmail));
     }
 
     /**
-     * Get the JWT of the current user.
+     * Get the current authenticated user's email from SecurityContext.
+     * Note: In this project, the username in SecurityContext is actually the user's email.
      *
-     * @return the JWT of the current user.
+     * @return the current authenticated user's email
+     * @throws IllegalStateException if user is not authenticated
      */
-    public static Optional<String> getCurrentUserJWT() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        return Optional.ofNullable(securityContext.getAuthentication())
-            .filter(authentication -> authentication.getCredentials() instanceof String)
-            .map(authentication -> (String) authentication.getCredentials());
-    }
-
-    /**
-     * Get the Id of the current user.
-     *
-     * @return the Id of the current user.
-     */
-    public static Optional<Long> getCurrentUserId() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        return Optional.ofNullable(securityContext.getAuthentication())
-            .filter(authentication -> authentication.getPrincipal() instanceof ClaimAccessor)
-            .map(authentication -> (ClaimAccessor) authentication.getPrincipal())
-            .map(principal -> principal.getClaim(USER_ID_CLAIM));
-    }
-
-    /**
-     * Check if a user is authenticated.
-     *
-     * @return true if the user is authenticated, false otherwise.
-     */
-    public static boolean isAuthenticated() {
+    public String getCurrentAuthenticatedUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && getAuthorities(authentication).noneMatch(AuthoritiesConstants.ANONYMOUS::equals);
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        
+        String userEmail = authentication.getName(); // This is actually the email
+        log.debug("Getting current authenticated user email: {}", userEmail);
+        return userEmail;
     }
 
     /**
-     * Checks if the current user has any of the authorities.
+     * Get the current authenticated username from SecurityContext.
+     * Note: This method is kept for backward compatibility, but returns the email.
+     * Use getCurrentAuthenticatedUserEmail() for clarity.
      *
-     * @param authorities the authorities to check.
-     * @return true if the current user has any of the authorities, false otherwise.
+     * @return the current authenticated username (which is actually the email)
+     * @throws IllegalStateException if user is not authenticated
+     * @deprecated Use getCurrentAuthenticatedUserEmail() instead for clarity
      */
-    public static boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
+    @Deprecated
+    public String getCurrentAuthenticatedUsername() {
+        return getCurrentAuthenticatedUserEmail();
+    }
+
+    /**
+     * Check if the current user has a specific role.
+     *
+     * @param role the role to check
+     * @return true if user has the role, false otherwise
+     */
+    public boolean hasRole(String role) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (
-            authentication != null && getAuthorities(authentication).anyMatch(authority -> Arrays.asList(authorities).contains(authority))
-        );
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role.toUpperCase()));
     }
 
     /**
-     * Checks if the current user has none of the authorities.
+     * Check if the current user is an admin.
      *
-     * @param authorities the authorities to check.
-     * @return true if the current user has none of the authorities, false otherwise.
+     * @return true if user is admin, false otherwise
      */
-    public static boolean hasCurrentUserNoneOfAuthorities(String... authorities) {
-        return !hasCurrentUserAnyOfAuthorities(authorities);
-    }
-
-    /**
-     * Checks if the current user has a specific authority.
-     *
-     * @param authority the authority to check.
-     * @return true if the current user has the authority, false otherwise.
-     */
-    public static boolean hasCurrentUserThisAuthority(String authority) {
-        return hasCurrentUserAnyOfAuthorities(authority);
-    }
-
-    private static Stream<String> getAuthorities(Authentication authentication) {
-        return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
+    public boolean isAdmin() {
+        return hasRole("ADMIN");
     }
 }

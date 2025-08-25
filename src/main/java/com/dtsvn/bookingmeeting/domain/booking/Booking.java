@@ -81,6 +81,9 @@ public class Booking {
     @JoinColumn(name = "cancelled_by")
     private User cancelledBy;
 
+    @Column(name = "admin_notes")
+    private String adminNotes;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

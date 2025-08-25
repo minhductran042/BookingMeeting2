@@ -1,4 +1,4 @@
-package com.dtsvn.bookingmeeting.dto.booking;
+package com.dtsvn.bookingmeeting.dto.booking.client;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -8,15 +8,12 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Request DTO for creating/updating a booking.
- */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookingRequest {
+public class BookingCreateRequest {
 
     @NotNull(message = "Meeting room ID is required")
     private Long meetingRoomId;
