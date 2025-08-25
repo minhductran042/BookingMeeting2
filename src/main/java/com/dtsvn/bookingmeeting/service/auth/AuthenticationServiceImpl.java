@@ -64,7 +64,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .username(savedUser.getUsername())
                         .email(savedUser.getEmail())
                         .fullName(savedUser.getFullName())
-                        .role(savedUser.getRole().name())
+                        .role(savedUser.getRole())
                         .isActive(savedUser.isActive())
                         .authorities(savedUser.getAuthorities())
                         .build())
@@ -112,6 +112,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .username(user.getUsername())
                         .email(user.getEmail())
                         .fullName(user.getFullName())
+                        .role(user.getRole())
+                        .isActive(user.isActive())
                         .authorities(user.getAuthorities())
                         .build())
                 .build();

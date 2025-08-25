@@ -1,5 +1,6 @@
 package com.dtsvn.bookingmeeting.dto.auth;
 
+import com.dtsvn.bookingmeeting.domain.enumeration.Role;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -14,18 +15,18 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfo {
-    
+
     private Long id;
-    
+
     private String username;
-    
+
     private String email;
-    
+
     private String fullName;
-    
-    private String role;
-    
+
+    private Role role;
+
     private boolean isActive;
-    
+
     private Collection<? extends GrantedAuthority> authorities;
 }

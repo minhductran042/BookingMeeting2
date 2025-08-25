@@ -15,14 +15,15 @@
 # ===================================================================
 
 ---
-# Conditionally disable springdoc on missing api-docs profile
-spring:
-  config:
-    activate:
-      on-profile: '!api-docs'
+# Swagger UI Configuration
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
 ---
 management:
   endpoints:

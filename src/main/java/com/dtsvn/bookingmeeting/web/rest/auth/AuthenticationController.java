@@ -10,6 +10,8 @@ import com.dtsvn.bookingmeeting.dto.auth.LoginResponse;
 import com.dtsvn.bookingmeeting.dto.auth.RefreshTokenResponse;
 import com.dtsvn.bookingmeeting.dto.auth.RegisterResponse;
 import com.dtsvn.bookingmeeting.dto.auth.UserInfo;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,12 +20,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "APIs for user authentication")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
     @PostMapping("register")
+    @Operation(summary = "User registration")
     public ApiResponse<RegisterResponse> register(@RequestBody @Valid RegisterRequest request) {
         try {
             RegisterResponse response = authenticationService.register(request);
@@ -34,6 +38,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("login")
+    @Operation(summary = "User login")
     public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
         try {
             LoginResponse response = authenticationService.login(request);
@@ -44,6 +49,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("refresh-token")
+    @Operation(summary = "Refresh token")
     public ApiResponse<RefreshTokenResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
         try {
             RefreshTokenResponse response = authenticationService.refreshToken(request.getRefreshToken());
@@ -54,6 +60,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("logout")
+    @Operation(summary = "User logout")
     public ApiResponse<?> logout(@RequestBody @Valid RefreshTokenRequest request) {
         try {
             authenticationService.logout(request.getRefreshToken());
@@ -64,6 +71,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("me")
+    @Operation(summary = "Get current user info")
     public ApiResponse<UserInfo> getCurrentUser(Authentication authentication) {
         try {
             User user = (User) authentication.getPrincipal();
@@ -72,7 +80,7 @@ public class AuthenticationController {
                     .username(user.getUsername())
                     .email(user.getEmail())
                     .fullName(user.getFullName())
-                    .role(user.getRole().name())
+                    .role(user.getRole())
                     .isActive(user.isActive())
                     .authorities(user.getAuthorities())
                     .build();
