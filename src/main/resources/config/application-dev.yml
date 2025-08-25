@@ -121,9 +121,9 @@ application:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY}
-      expiration: 1800000 # 30 minutes
+      expiration: 720000 # 2 hours
       refresh-token:
-        expiration: 86400000 # 24 hours
+        expiration: 604800000 # 7 days
 
 upload:
   path: uploads/
