@@ -1,115 +1,114 @@
 package com.dtsvn.bookingmeeting.security;
 
-import static com.dtsvn.bookingmeeting.security.SecurityUtils.USER_ID_CLAIM;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Optional;
+import com.dtsvn.bookingmeeting.domain.user.User;
+import com.dtsvn.bookingmeeting.domain.enumeration.Role;
+import com.dtsvn.bookingmeeting.repository.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for the {@link SecurityUtils} utility class.
  */
+@ExtendWith(MockitoExtension.class)
 class SecurityUtilsUnitTest {
 
+    @Mock
+    private UserRepository userRepository;
+
+    private SecurityUtils securityUtils;
+
     @BeforeEach
+    void setUp() {
+        securityUtils = new SecurityUtils(userRepository);
+    }
+
     @AfterEach
     void cleanup() {
         SecurityContextHolder.clearContext();
     }
 
     @Test
-    void testGetCurrentUserLogin() {
+    void testGetCurrentAuthenticatedUsername() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin"));
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin"));
         SecurityContextHolder.setContext(securityContext);
-        Optional<String> login = SecurityUtils.getCurrentUserLogin();
-        assertThat(login).contains("admin");
+        
+        String username = securityUtils.getCurrentAuthenticatedUsername();
+        assertThat(username).isEqualTo("admin@example.com");
     }
 
     @Test
-    void testGetCurrentUserJWT() {
+    void testGetCurrentAuthenticatedUserEmail() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin", "token"));
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin"));
         SecurityContextHolder.setContext(securityContext);
-        Optional<String> jwt = SecurityUtils.getCurrentUserJWT();
-        assertThat(jwt).contains("token");
+        
+        String email = securityUtils.getCurrentAuthenticatedUserEmail();
+        assertThat(email).isEqualTo("admin@example.com");
     }
 
     @Test
-    void testGetCurrentUserId() {
-        var userId = 1L;
-        var securityContext = SecurityContextHolder.createEmptyContext();
-        var now = Instant.now();
-        var jwt = Jwt.withTokenValue("token")
-            .issuedAt(now)
-            .expiresAt(now.plusSeconds(60))
-            .claim(USER_ID_CLAIM, userId)
-            .header("Test", "test")
+    void testGetCurrentAuthenticatedUser() {
+        User testUser = User.builder()
+            .id(1L)
+            .username("admin")
+            .email("admin@example.com")
+            .role(Role.ADMIN)
             .build();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken(jwt, "token"));
+
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin"));
         SecurityContextHolder.setContext(securityContext);
-        var contextUserId = SecurityUtils.getCurrentUserId();
-        assertThat(contextUserId.orElse(null)).isEqualTo(userId);
+
+        when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(testUser));
+        
+        User currentUser = securityUtils.getCurrentAuthenticatedUser();
+        assertThat(currentUser).isEqualTo(testUser);
     }
 
     @Test
-    void testIsAuthenticated() {
+    void testHasRole() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin"));
+        var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin", authorities));
         SecurityContextHolder.setContext(securityContext);
-        boolean isAuthenticated = SecurityUtils.isAuthenticated();
-        assertThat(isAuthenticated).isTrue();
+
+        assertThat(securityUtils.hasRole("ADMIN")).isTrue();
+        assertThat(securityUtils.hasRole("USER")).isFalse();
     }
 
     @Test
-    void testAnonymousIsNotAuthenticated() {
+    void testIsAdmin() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        var authorities = Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.ANONYMOUS));
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities));
+        var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin", authorities));
         SecurityContextHolder.setContext(securityContext);
-        boolean isAuthenticated = SecurityUtils.isAuthenticated();
-        assertThat(isAuthenticated).isFalse();
+
+        assertThat(securityUtils.isAdmin()).isTrue();
     }
 
     @Test
-    void testHasCurrentUserThisAuthority() {
+    void testIsNotAdmin() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        var authorities = Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities));
+        var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user@example.com", "user", authorities));
         SecurityContextHolder.setContext(securityContext);
 
-        assertThat(SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.USER)).isTrue();
-        assertThat(SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)).isFalse();
-    }
-
-    @Test
-    void testHasCurrentUserAnyOfAuthorities() {
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        var authorities = Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities));
-        SecurityContextHolder.setContext(securityContext);
-
-        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)).isTrue();
-        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ANONYMOUS, AuthoritiesConstants.ADMIN)).isFalse();
-    }
-
-    @Test
-    void testHasCurrentUserNoneOfAuthorities() {
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        var authorities = Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.USER));
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities));
-        SecurityContextHolder.setContext(securityContext);
-
-        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)).isFalse();
-        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(AuthoritiesConstants.ANONYMOUS, AuthoritiesConstants.ADMIN)).isTrue();
+        assertThat(securityUtils.isAdmin()).isFalse();
     }
 }
