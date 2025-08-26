@@ -1,55 +1,29 @@
 package com.dtsvn.bookingmeeting.config;
 
-import jakarta.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
-import tech.jhipster.config.JHipsterProperties;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Configuration of web application with Servlet 3.0 APIs.
  */
 @Configuration
-public class WebConfigurer implements ServletContextInitializer {
+public class WebConfigurer implements WebMvcConfigurer {
 
     private static final Logger LOG = LoggerFactory.getLogger(WebConfigurer.class);
 
-    private final Environment env;
-
-    private final JHipsterProperties jHipsterProperties;
-
-    public WebConfigurer(Environment env, JHipsterProperties jHipsterProperties) {
-        this.env = env;
-        this.jHipsterProperties = jHipsterProperties;
-    }
-
     @Override
-    public void onStartup(ServletContext servletContext) {
-        if (env.getActiveProfiles().length != 0) {
-            LOG.info("Web application configuration, using profiles: {}", (Object[]) env.getActiveProfiles());
-        }
-
-        LOG.info("Web application fully configured");
-    }
-
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = jHipsterProperties.getCors();
-        if (!CollectionUtils.isEmpty(config.getAllowedOrigins()) || !CollectionUtils.isEmpty(config.getAllowedOriginPatterns())) {
-            LOG.debug("Registering CORS filter");
-            source.registerCorsConfiguration("/api/**", config);
-            source.registerCorsConfiguration("/management/**", config);
-            source.registerCorsConfiguration("/v3/api-docs", config);
-            source.registerCorsConfiguration("/swagger-ui/**", config);
-        }
-        return new CorsFilter(source);
+    public void addCorsMappings(CorsRegistry registry) {
+        // CORS configuration cho WebMVC (không conflict với SecurityConfiguration)
+        registry.addMapping("/api/**")
+                .allowedOrigins("http://localhost:3000", "http://localhost:4200", "http://localhost:8080")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true) // Quan trọng để gửi cookie
+                .maxAge(3600);
+        
+        LOG.info("WebMVC CORS configuration added for /api/** endpoints");
     }
 }

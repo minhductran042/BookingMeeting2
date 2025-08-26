@@ -1,7 +1,5 @@
 package com.dtsvn.bookingmeeting.security;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.dtsvn.bookingmeeting.domain.user.User;
 import com.dtsvn.bookingmeeting.domain.enumeration.Role;
 import com.dtsvn.bookingmeeting.repository.user.UserRepository;
@@ -19,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Collections;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
@@ -45,7 +44,12 @@ class SecurityUtilsUnitTest {
     @Test
     void testGetCurrentAuthenticatedUsername() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin"));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            "admin@example.com", // Principal là email (String)
+            "admin", 
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+        securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
         
         String username = securityUtils.getCurrentAuthenticatedUsername();
@@ -55,7 +59,12 @@ class SecurityUtilsUnitTest {
     @Test
     void testGetCurrentAuthenticatedUserEmail() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin"));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            "admin@example.com", // Principal là email (String)
+            "admin", 
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+        securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
         
         String email = securityUtils.getCurrentAuthenticatedUserEmail();
@@ -72,7 +81,12 @@ class SecurityUtilsUnitTest {
             .build();
 
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin"));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            "admin@example.com", // Principal là email (String)
+            "admin", 
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+        securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
 
         when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(testUser));
@@ -85,7 +99,12 @@ class SecurityUtilsUnitTest {
     void testHasRole() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin", authorities));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            "admin@example.com", // Principal là email (String)
+            "admin", 
+            authorities
+        );
+        securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
 
         assertThat(securityUtils.hasRole("ADMIN")).isTrue();
@@ -96,7 +115,12 @@ class SecurityUtilsUnitTest {
     void testIsAdmin() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin@example.com", "admin", authorities));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            "admin@example.com", // Principal là email (String)
+            "admin", 
+            authorities
+        );
+        securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
 
         assertThat(securityUtils.isAdmin()).isTrue();
@@ -106,7 +130,12 @@ class SecurityUtilsUnitTest {
     void testIsNotAdmin() {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user@example.com", "user", authorities));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            "user@example.com", // Principal là email (String)
+            "user", 
+            authorities
+        );
+        securityContext.setAuthentication(authentication);
         SecurityContextHolder.setContext(securityContext);
 
         assertThat(securityUtils.isAdmin()).isFalse();

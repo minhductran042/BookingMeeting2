@@ -131,10 +131,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User user = refreshTokenEntity.getUser();
         String newAccessToken = jwtService.generateAccessToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+
+        // Invalidate old refresh token
+        refreshTokenRepository.delete(refreshTokenEntity);
+
+        // Save new refresh token
+        RefreshToken newRefreshTokenEntity = RefreshToken.builder()
+            .user(user)
+            .token(newRefreshToken)
+            .expiresAt(LocalDateTime.now().plusSeconds(refreshExpiration / 1000))
+            .build();
+        refreshTokenRepository.save(newRefreshTokenEntity);
 
         return RefreshTokenResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(newRefreshToken)
+                .tokenType("Bearer")
+                .expiresIn(jwtExpiration)
+                .expiresInFormatted(formatExpirationTime(jwtExpiration))
                 .build();
     }
 
