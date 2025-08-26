@@ -53,16 +53,8 @@ public class AuthenticationController {
             refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày
             response.addCookie(refreshTokenCookie);
             
-            // Không trả về refresh token trong response body
-            LoginResponse responseWithoutRefreshToken = LoginResponse.builder()
-                    .accessToken(loginResponse.getAccessToken())
-                    .tokenType(loginResponse.getTokenType())
-                    .expiresIn(loginResponse.getExpiresIn())
-                    .expiresInFormatted(loginResponse.getExpiresInFormatted())
-                    .userInfo(loginResponse.getUserInfo())
-                    .build();
-            
-            return new ApiResponse<>(HttpStatus.OK.value(), "Login successful", responseWithoutRefreshToken);
+            // Trả về refresh token trong response body để frontend có thể lấy được
+            return new ApiResponse<>(HttpStatus.OK.value(), "Login successful", loginResponse);
         } catch (Exception e) {
             return new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
         }
@@ -98,14 +90,8 @@ public class AuthenticationController {
             newRefreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7 ngày
             response.addCookie(newRefreshTokenCookie);
             
-            // Không trả về refresh token trong response body
-            RefreshTokenResponse responseWithoutRefreshToken = RefreshTokenResponse.builder()
-                    .accessToken(refreshResponse.getAccessToken())
-                    .tokenType(refreshResponse.getTokenType())
-                    .expiresIn(refreshResponse.getExpiresIn())
-                    .build();
-            
-            return new ApiResponse<>(HttpStatus.OK.value(), "Token refreshed successfully", responseWithoutRefreshToken);
+            // Trả về refresh token mới trong response body để frontend có thể lấy được
+            return new ApiResponse<>(HttpStatus.OK.value(), "Token refreshed successfully", refreshResponse);
         } catch (Exception e) {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
