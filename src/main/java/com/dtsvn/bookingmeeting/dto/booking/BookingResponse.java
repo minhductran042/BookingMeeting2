@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus;
 import com.dtsvn.bookingmeeting.dto.room.MeetingRoomResponse;
 import com.dtsvn.bookingmeeting.dto.user.UserResponse;
+import com.dtsvn.bookingmeeting.dto.notification.NotificationResponse;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -48,6 +49,8 @@ public class BookingResponse {
     private LocalDateTime cancelledAt;
 
     private UserResponse cancelledBy;
+
+    private String adminNotes;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;

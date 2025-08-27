@@ -1,5 +1,6 @@
-package com.dtsvn.bookingmeeting.domain.user;
+package com.dtsvn.bookingmeeting.domain.userDevice;
 
+import com.dtsvn.bookingmeeting.domain.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

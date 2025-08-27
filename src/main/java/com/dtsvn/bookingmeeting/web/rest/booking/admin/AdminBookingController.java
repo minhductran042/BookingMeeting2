@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/admin/booking")
 @Tag(name = "Admin Booking Management", description = "APIs for managing bookings by administrators")
 @Slf4j(topic = "ADMIN_BOOKING_CONTROLLER")

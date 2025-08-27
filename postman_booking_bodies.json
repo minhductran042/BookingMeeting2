@@ -1,0 +1,92 @@
+[
+  {
+    "meetingRoomId": 1,
+    "title": "Họp tuần dự án ABC",
+    "description": "Họp tuần để cập nhật tiến độ dự án ABC, thảo luận các vấn đề và lập kế hoạch tuần tới",
+    "purpose": "Cập nhật tiến độ dự án",
+    "startTime": "2024-09-01T09:00:00",
+    "endTime": "2024-09-01T10:30:00",
+    "participantIds": [1, 2, 3, 4]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Đào tạo nhân viên mới",
+    "description": "Buổi đào tạo cho nhân viên mới về quy trình làm việc và văn hóa công ty",
+    "purpose": "Đào tạo nhân viên mới",
+    "startTime": "2024-09-02T14:00:00",
+    "endTime": "2024-09-02T16:00:00",
+    "participantIds": [5, 6, 7, 8]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Họp khách hàng - Dự án XYZ",
+    "description": "Họp với khách hàng để trình bày prototype và nhận feedback về dự án XYZ",
+    "purpose": "Trình bày dự án cho khách hàng",
+    "startTime": "2024-09-03T10:00:00",
+    "endTime": "2024-09-03T11:30:00",
+    "participantIds": [9, 10, 11]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Họp đánh giá hiệu suất Q3",
+    "description": "Họp đánh giá hiệu suất quý 3 và lập kế hoạch cho quý 4",
+    "purpose": "Đánh giá hiệu suất quý 3",
+    "startTime": "2024-09-04T13:00:00",
+    "endTime": "2024-09-04T15:00:00",
+    "participantIds": [12, 13, 14, 15]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Workshop Agile Development",
+    "description": "Workshop về phương pháp Agile Development cho team development",
+    "purpose": "Đào tạo Agile Development",
+    "startTime": "2024-09-05T09:00:00",
+    "endTime": "2024-09-05T17:00:00",
+    "participantIds": [16, 17, 18, 19]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Họp ban lãnh đạo",
+    "description": "Họp định kỳ ban lãnh đạo để thảo luận chiến lược và ra quyết định quan trọng",
+    "purpose": "Thảo luận chiến lược công ty",
+    "startTime": "2024-09-06T08:30:00",
+    "endTime": "2024-09-06T10:00:00",
+    "participantIds": [20, 21, 22, 23]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Demo sản phẩm mới",
+    "description": "Demo sản phẩm mới cho toàn bộ công ty và nhận feedback",
+    "purpose": "Demo sản phẩm mới",
+    "startTime": "2024-09-07T15:00:00",
+    "endTime": "2024-09-07T16:30:00",
+    "participantIds": [24, 25, 26, 27]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Họp team Marketing",
+    "description": "Họp team Marketing để lập kế hoạch chiến dịch quý 4",
+    "purpose": "Lập kế hoạch chiến dịch Marketing",
+    "startTime": "2024-09-08T11:00:00",
+    "endTime": "2024-09-08T12:30:00",
+    "participantIds": [28, 29, 30]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Đánh giá dự án cuối năm",
+    "description": "Họp đánh giá tổng kết các dự án đã hoàn thành trong năm và rút kinh nghiệm",
+    "purpose": "Đánh giá tổng kết dự án",
+    "startTime": "2024-09-09T14:00:00",
+    "endTime": "2024-09-09T16:00:00",
+    "participantIds": [31, 32, 33, 34]
+  },
+  {
+    "meetingRoomId": 1,
+    "title": "Họp onboarding nhân viên",
+    "description": "Họp onboarding cho nhân viên mới về tổ chức, quy định và môi trường làm việc",
+    "purpose": "Onboarding nhân viên mới",
+    "startTime": "2024-09-10T09:00:00",
+    "endTime": "2024-09-10T11:00:00",
+    "participantIds": [35, 36, 37, 38]
+  }
+]

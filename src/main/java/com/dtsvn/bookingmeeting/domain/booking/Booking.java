@@ -98,5 +98,6 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking")
     @JsonIgnore
+    @Builder.Default
     private Set<BookingParticipant> participants = new HashSet<>();
 }

@@ -18,12 +18,10 @@ public class BookingCreateRequest {
     @NotNull(message = "Meeting room ID is required")
     private Long meetingRoomId;
 
-    @Size(max = 200, message = "Title must not exceed 200 characters")
     private String title;
 
     private String description;
 
-    @Size(max = 500, message = "Purpose must not exceed 500 characters")
     private String purpose;
 
     @NotNull(message = "Start time is required")

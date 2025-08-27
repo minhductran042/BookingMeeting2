@@ -18,62 +18,40 @@ public class SecurityUtils {
 
     private final UserRepository userRepository;
 
-    /**
-     * Get the current authenticated user from SecurityContext.
-     * Note: In this project, the username in SecurityContext is actually the user's email.
-     *
-     * @return the current authenticated user
-     * @throws IllegalStateException if user is not authenticated or not found
-     */
+
     public User getCurrentAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("User not authenticated");
         }
-        
-        String userEmail = authentication.getName(); // This is actually the email
-        log.debug("Getting current authenticated user with email: {}", userEmail);
-        
-        return userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalStateException("Authenticated user not found with email: " + userEmail));
+
+        String username = authentication.getName(); // This is actually the username
+        log.debug("Getting current authenticated user with username: {}", username);
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found with username: " + username));
     }
 
-    /**
-     * Get the current authenticated user's email from SecurityContext.
-     * Note: In this project, the username in SecurityContext is actually the user's email.
-     *
-     * @return the current authenticated user's email
-     * @throws IllegalStateException if user is not authenticated
-     */
+
     public String getCurrentAuthenticatedUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("User not authenticated");
         }
-        
-        String userEmail = authentication.getName(); // This is actually the email
-        log.debug("Getting current authenticated user email: {}", userEmail);
-        return userEmail;
-    }
 
-    /**
-     * Get the current authenticated username from SecurityContext.
-     * Note: This method is kept for backward compatibility, but returns the email.
-     * Use getCurrentAuthenticatedUserEmail() for clarity.
-     *
-     * @return the current authenticated username (which is actually the email)
-     * @throws IllegalStateException if user is not authenticated
-     * @deprecated Use getCurrentAuthenticatedUserEmail() instead for clarity
-     */
-    @Deprecated
-    public String getCurrentAuthenticatedUsername() {
-        return getCurrentAuthenticatedUserEmail();
+        String username = authentication.getName(); // This is actually the username
+        log.debug("Getting current authenticated user username: {}", username);
+        
+        // Get user first, then return email
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found with username: " + username));
+        return user.getEmail();
     }
 
     /**
      * Check if the current user has a specific role.
      *
-     * @param role the role to check
+     * @param role the role to check (e.g., "ADMIN", "USER")
      * @return true if user has the role, false otherwise
      */
     public boolean hasRole(String role) {
@@ -81,7 +59,7 @@ public class SecurityUtils {
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
-        
+
         return authentication.getAuthorities().stream()
                 .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role.toUpperCase()));
     }
