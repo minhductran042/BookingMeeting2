@@ -121,7 +121,7 @@ application:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY}
-      expiration: 720000 # 2 hours
+      expiration: 7200000 # 2 tiêng
       refresh-token:
         expiration: 604800000 # 7 days
 
