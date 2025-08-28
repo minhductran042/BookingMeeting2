@@ -118,7 +118,7 @@ public class AdminBookingController {
     public ApiResponse<List<BookingResponse>> searchBookings(
         @Valid @RequestBody BookingAdminSearchRequest request,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "0") int size,
         @RequestParam(defaultValue = "id") String sortBy,
         @RequestParam(defaultValue = "ASC") String sortDir
         ) {
@@ -137,7 +137,7 @@ public class AdminBookingController {
     public ApiResponse<List<BookingResponse>> getBookingsByStatus(
         @PathVariable String status,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "0") int size,
         @RequestParam(defaultValue = "id") String sortBy,
         @RequestParam(defaultValue = "ASC") String sortDir
     ) {

@@ -59,6 +59,42 @@ public class BookingClientServiceImpl implements BookingClientService {
     }
 
     @Override
+    public List<BookingResponse> getMyApprovedBookings() {
+        log.info("Fetching approved bookings created by the current user");
+        User currentUser = securityUtils.getCurrentAuthenticatedUser();
+        List<Booking> bookings = bookingRepository.findByStatusAndCreatedByOrderByCreatedAtDesc(
+                com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus.APPROVED, currentUser);
+        return bookingMapper.toResponseList(bookings);
+    }
+
+    @Override
+    public List<BookingResponse> getParticipatedApprovedBookings() {
+        log.info("Fetching approved bookings where the current user is a participant");
+        User currentUser = securityUtils.getCurrentAuthenticatedUser();
+        List<Booking> bookings = bookingRepository.findByStatusAndParticipantsUserOrderByCreatedAtDesc(
+                com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus.APPROVED, currentUser);
+        return bookingMapper.toResponseList(bookings);
+    }
+
+    @Override
+    public List<BookingResponse> getMyPendingBookings() {
+        log.info("Fetching pending bookings created by the current user");
+        User currentUser = securityUtils.getCurrentAuthenticatedUser();
+        List<Booking> bookings = bookingRepository.findByStatusAndCreatedByOrderByCreatedAtDesc(
+                com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus.PENDING, currentUser);
+        return bookingMapper.toResponseList(bookings);
+    }
+
+    @Override
+    public List<BookingResponse> getParticipatedPendingBookings() {
+        log.info("Fetching pending bookings where the current user is a participant");
+        User currentUser = securityUtils.getCurrentAuthenticatedUser();
+        List<Booking> bookings = bookingRepository.findByStatusAndParticipantsUserOrderByCreatedAtDesc(
+                com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus.PENDING, currentUser);
+        return bookingMapper.toResponseList(bookings);
+    }
+
+    @Override
     public BookingResponse getBookingById(Long id) {
         User currentUser = securityUtils.getCurrentAuthenticatedUser();
         Booking booking = getBookingByIdOrThrow(id);
@@ -106,7 +142,9 @@ public class BookingClientServiceImpl implements BookingClientService {
             }
         }
 
+        // Lưu booking một lần duy nhất với tất cả participants
         Booking savedBooking = bookingRepository.save(booking);
+        
         return bookingMapper.toResponse(savedBooking);
     }
 

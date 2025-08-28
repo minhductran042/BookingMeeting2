@@ -96,8 +96,36 @@ public class Booking {
     @JsonIgnore
     private Set<Notification> notifications = new HashSet<>();
 
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
     private Set<BookingParticipant> participants = new HashSet<>();
+
+    public boolean isApproved() {
+        return BookingStatus.APPROVED.equals(this.status);
+    }
+
+    public boolean isPending() {
+        return BookingStatus.PENDING.equals(this.status);
+    }
+
+    public boolean isRejected() {
+        return BookingStatus.REJECTED.equals(this.status);
+    }
+
+    public boolean isCancelled() {
+        return BookingStatus.CANCELLED.equals(this.status);
+    }
+
+    public boolean isCompleted() {
+        return BookingStatus.COMPLETED.equals(this.status);
+    }
+
+    public boolean canBeEdited() {
+        return BookingStatus.PENDING.equals(this.status);
+    }
+
+    public boolean canBeCancelled() {
+        return BookingStatus.PENDING.equals(this.status) || BookingStatus.APPROVED.equals(this.status);
+    }
 }

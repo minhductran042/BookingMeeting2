@@ -64,7 +64,7 @@ public class MeetingRoomController {
     @GetMapping
     public ApiResponse<List<MeetingRoomResponse>> getAllRooms(
             @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "0") int size,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         log.info("Getting all meeting rooms: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy, sortDirection);

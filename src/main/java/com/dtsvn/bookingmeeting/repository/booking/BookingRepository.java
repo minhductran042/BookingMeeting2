@@ -3,6 +3,8 @@ package com.dtsvn.bookingmeeting.repository.booking;
 import com.dtsvn.bookingmeeting.domain.booking.Booking;
 import com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -30,23 +32,35 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     /**
      * Tìm bookings mà user tham gia
      */
-    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT b FROM Booking b " +
+    @Query("SELECT DISTINCT b FROM Booking b " +
            "JOIN b.participants bp " +
            "WHERE bp.user = :user " +
            "ORDER BY b.createdAt DESC")
-    List<Booking> findByParticipantsUserOrderByCreatedAtDesc(@org.springframework.data.repository.query.Param("user") com.dtsvn.bookingmeeting.domain.user.User user);
+    List<Booking> findByParticipantsUserOrderByCreatedAtDesc(@Param("user") com.dtsvn.bookingmeeting.domain.user.User user);
 
     /**
      * Tìm bookings xung đột thời gian với meeting room
      */
-    @org.springframework.data.jpa.repository.Query("SELECT b FROM Booking b " +
+    @Query("SELECT b FROM Booking b " +
            "WHERE b.meetingRoom = :meetingRoom " +
            "AND b.status != 'CANCELLED' " +
            "AND ((b.startTime < :endTime AND b.endTime > :startTime) " +
            "OR (b.startTime = :startTime) " +
            "OR (b.endTime = :endTime))")
     List<Booking> findConflictingBookings(
-            @org.springframework.data.repository.query.Param("meetingRoom") com.dtsvn.bookingmeeting.domain.room.MeetingRoom meetingRoom,
-            @org.springframework.data.repository.query.Param("startTime") LocalDateTime startTime,
-            @org.springframework.data.repository.query.Param("endTime") LocalDateTime endTime);
+            @Param("meetingRoom") com.dtsvn.bookingmeeting.domain.room.MeetingRoom meetingRoom,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime);
+
+    List<Booking> findByStatusOrderByCreatedAtDesc(BookingStatus status);
+
+    List<Booking> findByStatusAndCreatedByOrderByCreatedAtDesc(BookingStatus status, com.dtsvn.bookingmeeting.domain.user.User user);
+
+    @Query("SELECT DISTINCT b FROM Booking b " +
+           "JOIN b.participants bp " +
+           "WHERE b.status = :status AND bp.user = :user " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findByStatusAndParticipantsUserOrderByCreatedAtDesc(
+            @Param("status") BookingStatus status,
+            @Param("user") com.dtsvn.bookingmeeting.domain.user.User user);
 }

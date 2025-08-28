@@ -80,9 +80,14 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
             page, size, sortBy, sortDirection);
 
         if (page < 0) page = 0;
-        if (size <= 0) size = 10;
         if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
         if (sortDirection == null || sortDirection.trim().isEmpty()) sortDirection = "ASC";
+
+        if (size <= 0) {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDirection.toUpperCase()), sortBy);
+            List<MeetingRoom> allRooms = meetingRoomRepository.findAll(sort);
+            return meetingRoomMapper.toResponseList(allRooms);
+        }
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection.toUpperCase()), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);

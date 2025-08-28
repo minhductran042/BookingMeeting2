@@ -32,7 +32,7 @@ public class LocationController {
 
     @GetMapping
     public ApiResponse<List<LocationResponse>> getLocationList(@RequestParam(required = false, defaultValue = "0") int page,
-                                                               @RequestParam(required = false, defaultValue = "10") int size,
+                                                               @RequestParam(required = false, defaultValue = "0") int size,
                                                                @RequestParam(required = false, defaultValue = "id") String sortBy,
                                                                @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         log.info("Get Location List: page={}, size={}, sortBy={}, sortDirection={}", page, size, sortBy, sortDirection);

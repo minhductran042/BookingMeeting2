@@ -73,7 +73,6 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public List<LocationResponse> getAllLocations(int page, int size, String sortBy, String sortDirection) {
         if (page < 0) page = 0;
-        if (size <= 0) size = 10;
         if (sortBy == null || sortBy.trim().isEmpty()) {
             sortBy = "createdAt";
         }
@@ -81,6 +80,17 @@ public class LocationServiceImpl implements LocationService {
             sortDirection = "DESC";
         }
 
+        // Nếu size <= 0, lấy tất cả bản ghi
+        if (size <= 0) {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+            List<Location> allLocations = locationRepository.findAll(sort);
+            
+            return allLocations.stream()
+                .map(locationMapper::toResponse)
+                .toList();
+        }
+
+        // Nếu size > 0, sử dụng phân trang
         Pageable pageable = PageRequest.of(page, size,
             Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
 

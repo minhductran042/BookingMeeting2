@@ -9,20 +9,28 @@ import com.dtsvn.bookingmeeting.dto.booking.client.RemoveParticipantRequest;
 import java.util.List;
 
 public interface BookingClientService {
-    
+
     List<BookingResponse> getMyBookings();
-    
+
     List<BookingResponse> getParticipatedBookings();
-    
+
+    List<BookingResponse> getMyApprovedBookings();
+
+    List<BookingResponse> getParticipatedApprovedBookings();
+
+    List<BookingResponse> getMyPendingBookings();
+
+    List<BookingResponse> getParticipatedPendingBookings();
+
     BookingResponse getBookingById(Long id);
-    
+
     BookingResponse createBooking(BookingCreateRequest request);
-    
+
     BookingResponse updateBooking(Long id, BookingUpdateRequest request);
-    
-    void cancelledBooking(Long id);
-    
+
     void addParticipant(Long bookingId, AddParticipantRequest request);
-    
+
     void removeParticipant(Long bookingId, RemoveParticipantRequest request);
+
+    void cancelledBooking(Long id);
 }

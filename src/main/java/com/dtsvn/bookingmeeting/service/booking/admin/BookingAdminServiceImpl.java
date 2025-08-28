@@ -45,9 +45,16 @@ public class BookingAdminServiceImpl implements BookingAdminService {
             page, size, sortBy, sortDir);
 
         if (page < 0) page = 0;
-        if (size <= 0) size = 10;
         if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
         if (sortDir == null || sortDir.trim().isEmpty()) sortDir = "DESC";
+
+        if (size <= 0) {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDir.toUpperCase()), sortBy);
+            List<Booking> allBookings = bookingRepository.findAll(sort);
+            return allBookings.stream()
+                .map(bookingMapper::toResponse)
+                .toList();
+        }
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir.toUpperCase()), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);

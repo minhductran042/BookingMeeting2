@@ -98,7 +98,7 @@ public class NotificationServiceImpl implements NotifcationService {
     /**
      * Gửi thông báo cho user cụ thể
      */
-    private void sendNotificationToUser(User user, String title, String message, Booking booking) {
+    public void sendNotificationToUser(User user, String title, String message, Booking booking) {
         try {
             // Lưu notification vào database
             Notification notification = Notification.builder()

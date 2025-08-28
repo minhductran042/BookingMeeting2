@@ -81,9 +81,16 @@ public class AdminUserServiceImpl implements AdminUserService {
             page, size, sortBy, sortDirection);
 
         if (page < 0) page = 0;
-        if (size <= 0) size = 10;
         if (sortBy == null || sortBy.trim().isEmpty()) sortBy = "id";
         if (sortDirection == null || sortDirection.trim().isEmpty()) sortDirection = "ASC";
+
+        if (size <= 0) {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDirection.toUpperCase()), sortBy);
+            List<User> allUsers = userRepository.findAll(sort);
+            return allUsers.stream()
+                .map(userMapper::toUserResponse)
+                .toList();
+        }
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection.toUpperCase()), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);

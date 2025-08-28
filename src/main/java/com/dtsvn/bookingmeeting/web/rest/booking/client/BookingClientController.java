@@ -64,6 +64,86 @@ public class BookingClientController {
         }
     }
 
+    @GetMapping("/my/approved")
+    public ApiResponse<List<BookingResponse>> getMyApprovedBookings() {
+        log.info("Fetching approved bookings for the authenticated client");
+        try {
+            List<BookingResponse> bookings = bookingClientService.getMyApprovedBookings();
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(200)
+                .message("Approved bookings fetched successfully")
+                .data(bookings)
+                .build();
+        } catch (Exception e) {
+            log.error("Error fetching approved bookings: {}", e.getMessage());
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(500)
+                .message("Error fetching approved bookings")
+                .data(null)
+                .build();
+        }
+    }
+
+    @GetMapping("/participated/approved")
+    public ApiResponse<List<BookingResponse>> getParticipatedApprovedBookings() {
+        log.info("Fetching approved bookings where the authenticated client is a participant");
+        try {
+            List<BookingResponse> bookings = bookingClientService.getParticipatedApprovedBookings();
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(200)
+                .message("Participated approved bookings fetched successfully")
+                .data(bookings)
+                .build();
+        } catch (Exception e) {
+            log.error("Error fetching participated approved bookings: {}", e.getMessage());
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(500)
+                .message("Error fetching participated approved bookings")
+                .data(null)
+                .build();
+        }
+    }
+
+    @GetMapping("/my/pending")
+    public ApiResponse<List<BookingResponse>> getMyPendingBookings() {
+        log.info("Fetching pending bookings for the authenticated client");
+        try {
+            List<BookingResponse> bookings = bookingClientService.getMyPendingBookings();
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(200)
+                .message("Pending bookings fetched successfully")
+                .data(bookings)
+                .build();
+        } catch (Exception e) {
+            log.error("Error fetching pending bookings: {}", e.getMessage());
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(500)
+                .message("Error fetching pending bookings")
+                .data(null)
+                .build();
+        }
+    }
+
+    @GetMapping("/participated/pending")
+    public ApiResponse<List<BookingResponse>> getParticipatedPendingBookings() {
+        log.info("Fetching pending bookings where the authenticated client is a participant");
+        try {
+            List<BookingResponse> bookings = bookingClientService.getParticipatedPendingBookings();
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(200)
+                .message("Participated pending bookings fetched successfully")
+                .data(bookings)
+                .build();
+        } catch (Exception e) {
+            log.error("Error fetching participated pending bookings: {}", e.getMessage());
+            return ApiResponse.<List<BookingResponse>>builder()
+                .status(500)
+                .message("Error fetching participated pending bookings")
+                .data(null)
+                .build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ApiResponse<BookingResponse> getBookingById(@PathVariable Long id) {
         log.info("Fetching booking with ID: {}", id);
