@@ -38,4 +38,10 @@ public interface MeetingRoomRepository extends JpaRepository<MeetingRoom, Long> 
     List<MeetingRoom> findAvailableRoomsByLocation(@Param("startTime") LocalDateTime startTime, 
                                                   @Param("endTime") LocalDateTime endTime,
                                                   @Param("locationId") Long locationId);
+
+    /**
+     * Đếm số phòng theo location
+     */
+    @Query("SELECT COUNT(mr) FROM MeetingRoom mr WHERE mr.location.id = :locationId")
+    int countByLocationId(@Param("locationId") Long locationId);
 }

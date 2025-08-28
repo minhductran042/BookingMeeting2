@@ -10,4 +10,5 @@ public interface UserDeviceService {
     public UserDevice registerDevice(RegisterDeviceRequest request);
     public void unregisterDevice(String deviceToken);
     public List<UserDevice> getUserDevices();
+    public List<UserDevice> getUserActiveDevices(User user);
 }

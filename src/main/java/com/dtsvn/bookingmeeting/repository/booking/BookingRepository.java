@@ -63,4 +63,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByStatusAndParticipantsUserOrderByCreatedAtDesc(
             @Param("status") BookingStatus status,
             @Param("user") com.dtsvn.bookingmeeting.domain.user.User user);
+
+    /**
+     * Tìm bookings theo khoảng thời gian
+     */
+    @Query("SELECT b FROM Booking b WHERE b.startTime BETWEEN :startTime AND :endTime")
+    List<Booking> findByStartTimeBetween(@Param("startTime") LocalDateTime startTime, 
+                                        @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * Tìm bookings theo location và khoảng thời gian
+     */
+    @Query("SELECT b FROM Booking b JOIN b.meetingRoom r JOIN r.location l " +
+           "WHERE l.id = :locationId AND b.startTime BETWEEN :startTime AND :endTime")
+    List<Booking> findByLocationAndDateRange(@Param("locationId") Long locationId,
+                                            @Param("startTime") LocalDateTime startTime,
+                                            @Param("endTime") LocalDateTime endTime);
 }

@@ -41,9 +41,7 @@ public class NotificationServiceImpl implements NotifcationService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final DeviceServiceImpl deviceServiceImpl;
 
-    /**
-     * Gửi thông báo nhắc lịch họp
-     */
+
     public void sendMeetingReminder(Booking booking, int minutesBefore) {
         try {
             String title = "Nhắc lịch họp";
@@ -65,33 +63,6 @@ public class NotificationServiceImpl implements NotifcationService {
 
         } catch (Exception e) {
             log.error("Error sending meeting reminder: {}", e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Gửi thông báo thay đổi trạng thái booking
-     */
-    public void sendBookingStatusUpdate(Booking booking, String status) {
-        try {
-            String title = "Cập nhật lịch họp";
-            String message = String.format("Lịch họp '%s' đã được %s",
-                booking.getTitle(), status);
-
-            // Gửi thông báo cho người tạo
-            sendNotificationToUser(booking.getCreatedBy(), title, message, booking);
-
-            // Gửi thông báo cho tất cả người tham gia
-            booking.getParticipants().forEach(participant -> {
-                if (!participant.getUser().equals(booking.getCreatedBy())) {
-                    sendNotificationToUser(participant.getUser(), title, message, booking);
-                }
-            });
-
-            log.info("Sent status update notification for booking {} - Status: {}",
-                booking.getId(), status);
-
-        } catch (Exception e) {
-            log.error("Error sending status update notification: {}", e.getMessage(), e);
         }
     }
 
@@ -295,9 +266,7 @@ public class NotificationServiceImpl implements NotifcationService {
         sendMeetingReminder(booking, 0);
     }
 
-    /**
-     * Gửi notification đến device qua Firebase
-     */
+
     public NotificationResponse sendNotificationToDevice(DeviceNotificationRequest request) {
         try {
             Message fcmMessage = Message.builder()

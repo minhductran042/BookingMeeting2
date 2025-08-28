@@ -53,11 +53,24 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Chỉ định origins cụ thể thay vì dùng wildcard (*)
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:3000",  // React dev server
+            "http://localhost:4200",  // Angular dev server
+            "http://localhost:8080"   // Backend dev server
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // Quan trọng để gửi cookie/refreshToken
         configuration.setMaxAge(3600L);
+        
+        // Expose headers để frontend có thể đọc refreshToken
+        configuration.setExposedHeaders(List.of(
+            "Authorization",
+            "Refresh-Token", 
+            "Set-Cookie",
+            "X-Total-Count"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
