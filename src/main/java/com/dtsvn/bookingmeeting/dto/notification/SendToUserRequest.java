@@ -39,3 +39,4 @@ public class SendToUserRequest {
         return this;
     }
 }
+

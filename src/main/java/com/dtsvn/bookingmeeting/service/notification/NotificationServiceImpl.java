@@ -10,7 +10,7 @@ import com.dtsvn.bookingmeeting.dto.notification.NotificationResponse;
 import com.dtsvn.bookingmeeting.repository.booking.BookingRepository;
 import com.dtsvn.bookingmeeting.repository.notification.NotificationRepository;
 import com.dtsvn.bookingmeeting.repository.user.UserRepository;
-import com.dtsvn.bookingmeeting.service.UserDevice.DeviceServiceImpl;
+import com.dtsvn.bookingmeeting.service.user_device.DeviceServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -23,10 +23,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+
 import com.dtsvn.bookingmeeting.domain.userDevice.UserDevice;
 
 @Service
@@ -256,7 +255,7 @@ public class NotificationServiceImpl implements NotifcationService {
         }
     }
 
-        /**
+    /**
      * Gửi nhắc lịch ngay lập tức (cho testing)
      */
     public void sendImmediateReminder(Long bookingId) {

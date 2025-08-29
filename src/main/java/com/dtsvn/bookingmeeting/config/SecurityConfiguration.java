@@ -55,19 +55,17 @@ public class SecurityConfiguration {
         CorsConfiguration configuration = new CorsConfiguration();
         // Chỉ định origins cụ thể thay vì dùng wildcard (*)
         configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000",  // React dev server
-            "http://localhost:4200",  // Angular dev server
-            "http://localhost:8080"   // Backend dev server
+            "http://localhost:3000"// React dev server
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // Quan trọng để gửi cookie/refreshToken
         configuration.setMaxAge(3600L);
-        
+
         // Expose headers để frontend có thể đọc refreshToken
         configuration.setExposedHeaders(List.of(
             "Authorization",
-            "Refresh-Token", 
+            "Refresh-Token",
             "Set-Cookie",
             "X-Total-Count"
         ));
