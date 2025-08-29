@@ -43,13 +43,13 @@ public class AdminBookingController {
     @GetMapping
     @Operation(summary = "Get all bookings", description = "Retrieve all bookings with pagination and sorting")
     public ApiResponse<List<BookingResponse>> getAllBookings(
-        @Parameter(description = "Page number (0-based)") @RequestParam int page,
-        @Parameter(description = "Page size") @RequestParam int size,
-        @Parameter(description = "Sort field") @RequestParam String sortBy,
-        @Parameter(description = "Sort direction (asc/desc)") @RequestParam String sortDir) {
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "0") int size,
+        @RequestParam(required = false, defaultValue = "id") String sortBy,
+        @RequestParam(required = false, defaultValue = "asc") String sortDirection) {
         log.info("Getting all bookings");
         try {
-            var bookings = bookingAdminService.getAllBookings(page, size, sortBy, sortDir);
+            var bookings = bookingAdminService.getAllBookings(page, size, sortBy, sortDirection);
             return new ApiResponse<>(200, "Bookings retrieved successfully", bookings);
         } catch (Exception e){
             log.error("Error retrieving all bookings: {}", e.getMessage());
