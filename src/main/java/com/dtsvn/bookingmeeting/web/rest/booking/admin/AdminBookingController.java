@@ -29,7 +29,7 @@ public class AdminBookingController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get booking by ID", description = "Retrieve a specific booking by its ID")
-    public ApiResponse<BookingResponse> getBookingById(@Parameter(description = "Booking ID") @RequestParam Long id) {
+    public ApiResponse<BookingResponse> getBookingById(@Parameter(description = "Booking ID") @PathVariable Long id) {
         log.info("Getting booking by ID");
         try {
             BookingResponse booking = bookingAdminService.getBookingById(id);
@@ -57,9 +57,9 @@ public class AdminBookingController {
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     @Operation(summary = "Update booking")
-    public ApiResponse<BookingResponse> updateBooking(@RequestParam Long id, BookingAdminUpdateRequest request) {
+    public ApiResponse<BookingResponse> updateBooking(@PathVariable Long id, @RequestBody @Valid BookingAdminUpdateRequest request) {
         log.info("Updating booking with ID: {}", id);
         try {
             BookingResponse updatedBooking = bookingAdminService.updateBooking(id, request);
@@ -70,9 +70,9 @@ public class AdminBookingController {
         }
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     @Operation(summary = "Delete booking")
-    public ApiResponse<?> deleteBooking(@RequestParam Long id) {
+    public ApiResponse<?> deleteBooking(@PathVariable Long id) {
         log.info("Deleting booking with ID: {}", id);
         try {
             bookingAdminService.deleteBooking(id);
