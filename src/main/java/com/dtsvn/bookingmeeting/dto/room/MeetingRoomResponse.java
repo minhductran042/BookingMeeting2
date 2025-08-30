@@ -6,10 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-/**
- * Response DTO for meeting room information.
- * Contains all necessary fields for displaying meeting room details to users.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,7 +26,7 @@ public class MeetingRoomResponse {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 }

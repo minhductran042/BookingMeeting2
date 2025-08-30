@@ -25,6 +25,8 @@ public interface BookingMapper {
     @Mapping(source = "participants", target = "participants", qualifiedByName = "participantsToUserResponses")
     BookingResponse toResponse(Booking booking);
 
+    @Mapping(target = "startTime", ignore = true)
+    @Mapping(target = "endTime", ignore = true)
     Booking updateEntity(@MappingTarget Booking booking, BookingAdminUpdateRequest request);
 
     List<BookingResponse> toResponseList(List<Booking> bookings);

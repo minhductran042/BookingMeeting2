@@ -35,7 +35,11 @@ public class BookingAdminServiceImpl implements BookingAdminService {
     @Override
     public BookingResponse getBookingById(Long id) {
         log.info("Retrieving booking by id: {}", id);
-        Booking booking = getBookingByIdOrThrow(id);
+
+        // Get booking by ID with proper error handling
+        Booking booking = bookingRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
         return bookingMapper.toResponse(booking);
     }
 
@@ -67,27 +71,63 @@ public class BookingAdminServiceImpl implements BookingAdminService {
     }
 
     @Override
+    @Transactional
     public BookingResponse updateBooking(Long id, BookingAdminUpdateRequest request) {
         log.info("Updating booking with id: {}, request: {}", id, request);
-        Booking booking = getBookingByIdOrThrow(id);
+
+        Booking booking = bookingRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
 
         Booking updatedBooking = bookingMapper.updateEntity(booking, request);
 
-        bookingRepository.save(updatedBooking);
-        return bookingMapper.toResponse(updatedBooking);
+
+        if (request.getStartTime() != null) {
+            updatedBooking.setStartTime(request.getStartTime());
+        }
+        if (request.getEndTime() != null) {
+            updatedBooking.setEndTime(request.getEndTime());
+        }
+
+        // Update nullable fields only if provided (preserve existing values)
+        updateNullableFields(updatedBooking, request);
+
+        try {
+            bookingRepository.save(updatedBooking);
+            return bookingMapper.toResponse(updatedBooking);
+        } catch (Exception e) {
+            log.error("Failed to save updated booking with id: {}", id, e);
+            throw new RuntimeException("Failed to update booking: " + e.getMessage(), e);
+        }
     }
 
     @Override
+    @Transactional
     public void deleteBooking(Long id) {
         log.info("Deleting booking with id: {}", id);
-        Booking booking = getBookingByIdOrThrow(id);
-        bookingRepository.delete(booking);
+
+
+        Booking booking = bookingRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
+        try {
+            bookingRepository.delete(booking);
+            log.info("Successfully deleted booking with id: {}", id);
+        } catch (Exception e) {
+            log.error("Failed to delete booking with id: {}", id, e);
+            throw new RuntimeException("Failed to delete booking: " + e.getMessage(), e);
+        }
     }
 
     @Override
+    @Transactional
     public void approveBooking(Long id, BookingApprovalRequest request) {
         log.info("Approving booking with id: {}, request: {}", id, request);
-        Booking booking = getBookingByIdOrThrow(id);
+
+
+        Booking booking = bookingRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
         User approver = securityUtils.getCurrentAuthenticatedUser();
 
         if (booking.getStatus() != BookingStatus.PENDING) {
@@ -97,21 +137,26 @@ public class BookingAdminServiceImpl implements BookingAdminService {
         booking.setStatus(BookingStatus.APPROVED);
         booking.setApprover(approver);
         booking.setApprovedAt(LocalDateTime.now());
-        
-        // Store admin notes if provided
+
+
         if (request.getAdminNotes() != null && !request.getAdminNotes().trim().isEmpty()) {
             booking.setAdminNotes(request.getAdminNotes());
         }
 
         bookingRepository.save(booking);
-        log.info("Booking {} approved by user {} with notes: {}", id, approver.getUsername(), 
+        log.info("Booking {} approved by user {} with notes: {}", id, approver.getUsername(),
             request.getAdminNotes() != null ? request.getAdminNotes() : "No notes");
     }
 
     @Override
+    @Transactional
     public void rejectBooking(Long id, BookingApprovalRequest request) {
         log.info("Rejecting booking with id: {}, request: {}", id, request);
-        Booking booking = getBookingByIdOrThrow(id);
+
+
+        Booking booking = bookingRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
         User approver = securityUtils.getCurrentAuthenticatedUser();
 
         if (booking.getStatus() != BookingStatus.PENDING) {
@@ -121,14 +166,13 @@ public class BookingAdminServiceImpl implements BookingAdminService {
         booking.setStatus(BookingStatus.REJECTED);
         booking.setApprover(approver);
         booking.setApprovedAt(LocalDateTime.now());
-        
-        // Store admin notes if provided
+
         if (request.getAdminNotes() != null && !request.getAdminNotes().trim().isEmpty()) {
             booking.setAdminNotes(request.getAdminNotes());
         }
 
         bookingRepository.save(booking);
-        log.info("Booking {} rejected by user {} with notes: {}", id, approver.getUsername(), 
+        log.info("Booking {} rejected by user {} with notes: {}", id, approver.getUsername(),
             request.getAdminNotes() != null ? request.getAdminNotes() : "No notes");
     }
 
@@ -204,10 +248,7 @@ public class BookingAdminServiceImpl implements BookingAdminService {
         return bookingRepository.findByCreatedById(userId).size();
     }
 
-    private Booking getBookingByIdOrThrow(Long id) {
-        return bookingRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
-    }
+
 
     private boolean matchesSearchCriteria(Booking booking, BookingAdminSearchRequest searchRequest) {
         if (searchRequest == null) return true;
@@ -275,5 +316,20 @@ public class BookingAdminServiceImpl implements BookingAdminService {
         }
 
         return true;
+    }
+
+    private void updateNullableFields(Booking booking, BookingAdminUpdateRequest request) {
+        if (request.getTitle() != null) {
+            booking.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            booking.setDescription(request.getDescription());
+        }
+        if (request.getPurpose() != null) {
+            booking.setPurpose(request.getPurpose());
+        }
+        if (request.getAdminNotes() != null) {
+            booking.setAdminNotes(request.getAdminNotes());
+        }
     }
 }
