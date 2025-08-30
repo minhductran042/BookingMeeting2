@@ -1,8 +1,8 @@
-package com.dtsvn.bookingmeeting.web.rest.calendar;
+package com.dtsvn.bookingmeeting.web.rest.calendar.admin;
 
 import com.dtsvn.bookingmeeting.dto.ApiResponse;
 import com.dtsvn.bookingmeeting.dto.calendar.*;
-import com.dtsvn.bookingmeeting.service.calendar.AdminCalendarService;
+import com.dtsvn.bookingmeeting.service.calendar.admin.AdminCalendarService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/calendar/admin")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Admin Calendar", description = "APIs cho admin calendar management")
@@ -22,7 +22,7 @@ public class AdminCalendarController {
 
     private final AdminCalendarService adminCalendarService;
 
-    @PostMapping("/calendar")
+    @PostMapping
     @Operation(summary = "Lấy lịch tổng quan", description = "Lấy lịch tổng quan theo khoảng thời gian")
     public ApiResponse<CalendarOverviewResponse> getCalendarOverview(
             @Valid @RequestBody CalendarRequest request) {
@@ -38,7 +38,7 @@ public class AdminCalendarController {
         }
     }
 
-    @PostMapping("/calendar/room/{roomId}")
+    @PostMapping("/room/{roomId}")
     @Operation(summary = "Lấy lịch phòng cụ thể", description = "Lấy lịch của một phòng cụ thể theo khoảng thời gian")
     public ApiResponse<CalendarOverviewResponse> getRoomCalendar(
             @Parameter(description = "ID phòng họp", example = "1")

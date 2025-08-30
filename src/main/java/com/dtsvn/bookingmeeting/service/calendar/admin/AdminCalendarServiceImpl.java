@@ -1,4 +1,4 @@
-package com.dtsvn.bookingmeeting.service.calendar;
+package com.dtsvn.bookingmeeting.service.calendar.admin;
 
 import com.dtsvn.bookingmeeting.domain.booking.Booking;
 import com.dtsvn.bookingmeeting.dto.calendar.*;
@@ -39,9 +39,9 @@ public class AdminCalendarServiceImpl implements AdminCalendarService {
 
             // 2. Tạo danh sách các ngày
             List<CalendarDayResponse> days = createCalendarDays(
-                request.getStartDate(), 
-                request.getEndDate(), 
-                bookings, 
+                request.getStartDate(),
+                request.getEndDate(),
+                bookings,
                 request.getLocationId()
             );
 
@@ -78,9 +78,9 @@ public class AdminCalendarServiceImpl implements AdminCalendarService {
 
             // 2. Tạo danh sách các ngày cho phòng cụ thể
             List<CalendarDayResponse> days = createRoomCalendarDays(
-                request.getStartDate(), 
-                request.getEndDate(), 
-                roomBookings, 
+                request.getStartDate(),
+                request.getEndDate(),
+                roomBookings,
                 roomId
             );
 

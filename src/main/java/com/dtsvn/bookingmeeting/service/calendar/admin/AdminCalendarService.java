@@ -1,4 +1,4 @@
-package com.dtsvn.bookingmeeting.service.calendar;
+package com.dtsvn.bookingmeeting.service.calendar.admin;
 
 import com.dtsvn.bookingmeeting.dto.calendar.CalendarOverviewResponse;
 import com.dtsvn.bookingmeeting.dto.calendar.CalendarRequest;
