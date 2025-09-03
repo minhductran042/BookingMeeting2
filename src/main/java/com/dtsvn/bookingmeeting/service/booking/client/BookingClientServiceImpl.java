@@ -117,14 +117,17 @@ public class BookingClientServiceImpl implements BookingClientService {
 
         // Validate thời gian
         validateBookingTime(request.getStartTime(), request.getEndTime(), meetingRoom);
+        
+        LocalDateTime startUtc = request.getStartTime();
+        LocalDateTime endUtc = request.getEndTime();
 
         // Tạo booking
         Booking booking = Booking.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .purpose(request.getPurpose())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
+                .startTime(startUtc)
+                .endTime(endUtc)
                 .status(BookingStatus.PENDING)
                 .meetingRoom(meetingRoom)
                 .createdBy(currentUser)
