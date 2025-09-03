@@ -246,17 +246,24 @@ public class BookingClientServiceImpl implements BookingClientService {
             throw new RuntimeException("Start time must be before end time");
         }
 
-        // Kiểm tra xung đột thời gian
         List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(
                 meetingRoom, startTime, endTime);
 
-        if (!conflictingBookings.isEmpty()) {
-            throw new RuntimeException("Time slot conflicts with existing bookings");
+        boolean hasApprovedConflict = conflictingBookings.stream()
+                .anyMatch(b -> b.getStatus() == BookingStatus.APPROVED);
+        if (hasApprovedConflict) {
+            throw new RuntimeException("Time slot conflicts with an approved booking");
+        }
+
+        boolean hasPendingConflict = conflictingBookings.stream()
+                .anyMatch(b -> b.getStatus() == BookingStatus.PENDING);
+        if (hasPendingConflict) {
+            log.warn("Creating booking in a time slot that conflicts with pending bookings for room {} between {} and {}",
+                    meetingRoom.getId(), startTime, endTime);
         }
     }
 
     private void addParticipantToBooking(Booking booking, User user) {
-        // Đảm bảo participants không null
         if (booking.getParticipants() == null) {
             booking.setParticipants(new HashSet<>());
         }

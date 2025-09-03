@@ -44,9 +44,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b " +
            "WHERE b.meetingRoom = :meetingRoom " +
            "AND b.status != 'CANCELLED' " +
-           "AND ((b.startTime < :endTime AND b.endTime > :startTime) " +
+           "AND ((b.startTime < :endTime AND b.endTime > :startTime) " + // day la cau lenh kiem tra xem co giao nhau ko giua 2 khoang thoi gian
            "OR (b.startTime = :startTime) " +
-           "OR (b.endTime = :endTime))")
+           "OR (b.endTime = :endTime))") // check xem có trùng startTime hoặc endTime không
     List<Booking> findConflictingBookings(
             @Param("meetingRoom") com.dtsvn.bookingmeeting.domain.room.MeetingRoom meetingRoom,
             @Param("startTime") LocalDateTime startTime,
@@ -68,7 +68,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * Tìm bookings theo khoảng thời gian
      */
     @Query("SELECT b FROM Booking b WHERE b.startTime BETWEEN :startTime AND :endTime")
-    List<Booking> findByStartTimeBetween(@Param("startTime") LocalDateTime startTime, 
+    List<Booking> findByStartTimeBetween(@Param("startTime") LocalDateTime startTime,
                                         @Param("endTime") LocalDateTime endTime);
 
     /**

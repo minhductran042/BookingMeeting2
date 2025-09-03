@@ -146,6 +146,29 @@ public class BookingAdminServiceImpl implements BookingAdminService {
         bookingRepository.save(booking);
         log.info("Booking {} approved by user {} with notes: {}", id, approver.getUsername(),
             request.getAdminNotes() != null ? request.getAdminNotes() : "No notes");
+
+        var conflicting = bookingRepository.findConflictingBookings(
+            booking.getMeetingRoom(), booking.getStartTime(), booking.getEndTime());
+
+        if (conflicting != null && !conflicting.isEmpty()) {
+            LocalDateTime decisionTime = LocalDateTime.now();
+            conflicting.stream()
+                .filter(b -> !b.getId().equals(booking.getId()))
+                .filter(b -> b.getStatus() == BookingStatus.PENDING)
+                .forEach(b -> {
+                    b.setStatus(BookingStatus.REJECTED);
+                    b.setApprover(approver);
+                    b.setApprovedAt(decisionTime);
+                    String reason = "Auto-rejected due to conflict with approved booking #" + booking.getId();
+                    if (b.getAdminNotes() == null || b.getAdminNotes().isBlank()) {
+                        b.setAdminNotes(reason);
+                    } else {
+                        b.setAdminNotes(b.getAdminNotes() + " | " + reason);
+                    }
+                });
+            bookingRepository.saveAll(conflicting);
+            log.info("Auto-rejected {} conflicting pending bookings for approved booking {}", conflicting.size(), id);
+        }
     }
 
     @Override
@@ -212,8 +235,7 @@ public class BookingAdminServiceImpl implements BookingAdminService {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir.toUpperCase()), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // This is a simplified search - in a real implementation, you might want to use
-        // Specification or Criteria API for more complex queries
+
         var pageResult = bookingRepository.findAll(pageable);
         return pageResult.getContent()
             .stream()
