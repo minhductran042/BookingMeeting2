@@ -27,12 +27,12 @@ public class BookingCreateRequest {
 
     @NotNull(message = "Start time is required")
     @Future(message = "Start time must be in the future")
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "Asia/Ho_Chi_Minh")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startTime;
 
     @NotNull(message = "End time is required")
     @Future(message = "End time must be in the future")
-    @JsonFormat(pattern = "dd/MM/yyyy HH:mm", timezone = "Asia/Ho_Chi_Minh")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime endTime;
 
     private List<Long> participantIds;
