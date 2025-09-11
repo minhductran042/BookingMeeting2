@@ -35,7 +35,7 @@ public class UserDevice {
     private User user;
 
     @NotNull
-    @Column(length = 100, nullable = false)
+    @Column(nullable = false)
     private String deviceToken;
 
     @Size(max = 100)

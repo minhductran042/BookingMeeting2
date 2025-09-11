@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -18,7 +17,6 @@ public class NotificationResponse {
     private String tokenDevice;
     private String imageUrl;
     private LocalDateTime sentAt;
-    private Map<String,String> data;
     private boolean isSeen;
     private String message;
 }

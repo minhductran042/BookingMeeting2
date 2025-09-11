@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 
 import com.dtsvn.bookingmeeting.domain.userDevice.UserDevice;
 
@@ -83,11 +82,8 @@ public class NotificationServiceImpl implements NotifcationService {
             notificationRepository.save(notification);
             log.info("Saved notification for user: {} - {}", user.getEmail(), title);
 
-            // Tạo NotificationRequest với data phù hợp
-            NotificationRequest notificationRequest = NotificationRequest.of(title, message)
-                    .addData("type", "BOOKING_REMINDER")
-                    .addData("bookingId", booking.getId())
-                    .addData("minutesBefore", 0);
+            // Tạo NotificationRequest
+            NotificationRequest notificationRequest = NotificationRequest.of(title, message);
 
             // Gửi Firebase notification sử dụng NotificationRequest
             sendFirebaseNotificationToUser(user, notificationRequest);
@@ -176,7 +172,7 @@ public class NotificationServiceImpl implements NotifcationService {
             for (UserDevice device : userDevices) {
                 if (device.isActive() && device.getDeviceToken() != null) {
                     try {
-                        Message.Builder messageBuilder = Message.builder()
+                        Message fcmMessage = Message.builder()
                                 .setToken(device.getDeviceToken())
                                 .setNotification(
                                         com.google.firebase.messaging.Notification.builder()
@@ -184,16 +180,8 @@ public class NotificationServiceImpl implements NotifcationService {
                                                 .setBody(notificationRequest.getBody())
                                                 .setImage(notificationRequest.getImageUrl())
                                                 .build()
-                                );
-
-                        // Thêm tất cả data từ notificationRequest
-                        if (notificationRequest.getData() != null && !notificationRequest.getData().isEmpty()) {
-                            for (Map.Entry<String, String> entry : notificationRequest.getData().entrySet()) {
-                                messageBuilder.putData(entry.getKey(), entry.getValue());
-                            }
-                        }
-
-                        Message fcmMessage = messageBuilder.build();
+                                )
+                                .build();
                         String response = FirebaseMessaging.getInstance(firebaseApp).sendAsync(fcmMessage).get();
                         log.info("Firebase notification sent to user {} device {}: {}",
                                 user.getEmail(), device.getDeviceToken(), response);
@@ -277,7 +265,6 @@ public class NotificationServiceImpl implements NotifcationService {
                                     .setImage(request.getImageUrl())
                                     .build()
                     )
-                    .putAllData(request.getData())
                     .build();
 
             String response = FirebaseMessaging.getInstance(firebaseApp).sendAsync(fcmMessage).get();
@@ -299,7 +286,6 @@ public class NotificationServiceImpl implements NotifcationService {
                     .tokenDevice(request.getDeviceToken())
                     .imageUrl(request.getImageUrl())
                     .sentAt(LocalDateTime.now())
-                    .data(request.getData())
                     .isSeen(false)
                     .message("Notification sent successfully")
                     .build();
@@ -312,7 +298,6 @@ public class NotificationServiceImpl implements NotifcationService {
                     .tokenDevice(request.getDeviceToken())
                     .imageUrl(request.getImageUrl())
                     .sentAt(LocalDateTime.now())
-                    .data(request.getData())
                     .isSeen(false)
                     .message("Error sending notification: " + e.getMessage())
                     .build();
