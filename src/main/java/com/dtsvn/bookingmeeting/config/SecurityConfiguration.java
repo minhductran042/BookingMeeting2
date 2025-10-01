@@ -53,16 +53,22 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Chỉ định origins cụ thể thay vì dùng wildcard (*)
-        configuration.setAllowedOrigins(List.of(
-            "http://localhost:3000"// React dev server
+        // Allow specific origins and dynamic subdomains (e.g., ngrok, vercel previews)
+        configuration.setAllowedOriginPatterns(List.of(
+            "http://localhost:3000",
+            "https://localhost:3000",
+            "http://localhost:4200",
+            "https://localhost:4200",
+            "https://booking-room-two.vercel.app",
+            "https://*.vercel.app",
+            "https://*.ngrok-free.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // Quan trọng để gửi cookie/refreshToken
+        configuration.setAllowCredentials(true); // Needed for cookies/refreshToken across origins
         configuration.setMaxAge(3600L);
 
-        // Expose headers để frontend có thể đọc refreshToken
+        // Expose headers for frontend to read
         configuration.setExposedHeaders(List.of(
             "Authorization",
             "Refresh-Token",

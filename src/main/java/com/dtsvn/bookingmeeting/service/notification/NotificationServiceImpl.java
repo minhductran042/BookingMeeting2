@@ -1,6 +1,7 @@
 package com.dtsvn.bookingmeeting.service.notification;
 
 import com.dtsvn.bookingmeeting.domain.booking.Booking;
+import com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus;
 import com.dtsvn.bookingmeeting.domain.enumeration.NotificationType;
 import com.dtsvn.bookingmeeting.domain.notification.Notification;
 import com.dtsvn.bookingmeeting.domain.user.User;
@@ -42,25 +43,30 @@ public class NotificationServiceImpl implements NotifcationService {
 
     public void sendMeetingReminder(Booking booking, int minutesBefore) {
         try {
-            String title = "Nhắc lịch họp";
-            String message = String.format("Lịch họp '%s' sẽ bắt đầu sau %d phút",
-                booking.getTitle(), minutesBefore);
+            String title = "🔔 Nhắc lịch họp";
+            String message = String.format("Lịch họp '%s' sẽ bắt đầu sau %d phút tại phòng %s",
+                booking.getTitle(), 
+                minutesBefore,
+                booking.getMeetingRoom() != null ? booking.getMeetingRoom().getName() : "chưa xác định");
 
             // Gửi thông báo cho người tạo
             sendNotificationToUser(booking.getCreatedBy(), title, message, booking);
 
             // Gửi thông báo cho tất cả người tham gia
-            booking.getParticipants().forEach(participant -> {
+            int participantCount = 0;
+            for (var participant : booking.getParticipants()) {
                 if (!participant.getUser().equals(booking.getCreatedBy())) {
                     sendNotificationToUser(participant.getUser(), title, message, booking);
+                    participantCount++;
                 }
-            });
+            }
 
-            log.info("Sent meeting reminder for booking {} - {} minutes before",
-                booking.getId(), minutesBefore);
+            log.info("Sent meeting reminder for booking {} to {} people ({} minutes before)",
+                booking.getId(), participantCount + 1, minutesBefore);
 
         } catch (Exception e) {
-            log.error("Error sending meeting reminder: {}", e.getMessage(), e);
+            log.error("Error sending meeting reminder for booking {}: {}", 
+                booking.getId(), e.getMessage(), e);
         }
     }
 
@@ -80,12 +86,16 @@ public class NotificationServiceImpl implements NotifcationService {
                     .build();
 
             notificationRepository.save(notification);
-            log.info("Saved notification for user: {} - {}", user.getEmail(), title);
 
-            // Tạo NotificationRequest
+            // Tạo NotificationRequest với thông tin chi tiết
             NotificationRequest notificationRequest = NotificationRequest.of(title, message);
+            
+            // Thêm thông tin phòng họp vào imageUrl nếu có
+            if (booking.getMeetingRoom() != null && booking.getMeetingRoom().getImageUrl() != null) {
+                notificationRequest.setImageUrl(booking.getMeetingRoom().getImageUrl());
+            }
 
-            // Gửi Firebase notification sử dụng NotificationRequest
+            // Gửi Firebase notification
             sendFirebaseNotificationToUser(user, notificationRequest);
 
         } catch (Exception e) {
@@ -168,6 +178,14 @@ public class NotificationServiceImpl implements NotifcationService {
         try {
             // Lấy device token từ UserDevice repository
             List<UserDevice> userDevices = deviceServiceImpl.getUserActiveDevices(user);
+            
+            if (userDevices.isEmpty()) {
+                log.warn("No active devices found for user: {}", user.getEmail());
+                return;
+            }
+
+            int successCount = 0;
+            int failureCount = 0;
 
             for (UserDevice device : userDevices) {
                 if (device.isActive() && device.getDeviceToken() != null) {
@@ -182,22 +200,26 @@ public class NotificationServiceImpl implements NotifcationService {
                                                 .build()
                                 )
                                 .build();
-                        String response = FirebaseMessaging.getInstance(firebaseApp).sendAsync(fcmMessage).get();
-                        log.info("Firebase notification sent to user {} device {}: {}",
-                                user.getEmail(), device.getDeviceToken(), response);
+                        
+                        FirebaseMessaging.getInstance(firebaseApp).sendAsync(fcmMessage).get();
+                        successCount++;
+                        
                     } catch (Exception e) {
-                        log.error("Error sending Firebase notification to device {}: {}", device.getDeviceToken(), e.getMessage());
+                        failureCount++;
+                        log.error("Error sending Firebase notification to device: {}", e.getMessage());
 
                         // Nếu gửi thất bại, đánh dấu device không active
                         if (e instanceof FirebaseMessagingException) {
                             device.setActive(false);
-                            log.warn("Device {} deactivated due to Firebase error", device.getDeviceToken());
                         }
                     }
                 }
             }
 
-            log.info("Firebase notification prepared for user: {} - {}", user.getEmail(), notificationRequest.getTitle());
+            if (failureCount > 0) {
+                log.warn("Firebase notification for user {}: {} success, {} failures", 
+                        user.getEmail(), successCount, failureCount);
+            }
 
         } catch (Exception e) {
             log.error("Error sending Firebase notification to user {}: {}", user.getEmail(), e.getMessage());
@@ -210,36 +232,48 @@ public class NotificationServiceImpl implements NotifcationService {
      */
     @Scheduled(fixedRate = 60000) // 60 seconds = 1 minute
     public void checkAndSendMeetingReminders() {
-        log.info("Checking for meeting reminders...");
-
         LocalDateTime now = LocalDateTime.now();
 
         // Lấy tất cả bookings đã approved và chưa bắt đầu
         List<Booking> approvedBookings = bookingRepository.findByStatus(
-                com.dtsvn.bookingmeeting.domain.enumeration.BookingStatus.APPROVED);
+                BookingStatus.APPROVED);
 
-        // Lọc ra những booking chưa bắt đầu
+        // Lọc ra những booking chưa bắt đầu và trong khoảng thời gian cần nhắc lịch
         List<Booking> upcomingBookings = approvedBookings.stream()
-                .filter(booking -> booking.getStartTime().isAfter(now))
+                .filter(booking -> {
+                    LocalDateTime startTime = booking.getStartTime();
+                    long minutesUntilStart = ChronoUnit.MINUTES.between(now, startTime);
+                    
+                    // Chỉ xử lý các booking trong khoảng 0-35 phút tới
+                    return startTime.isAfter(now) && minutesUntilStart <= 35;
+                })
                 .collect(java.util.stream.Collectors.toList());
 
+        int remindersSent = 0;
         for (Booking booking : upcomingBookings) {
             long minutesUntilStart = ChronoUnit.MINUTES.between(now, booking.getStartTime());
 
-            // Gửi nhắc lịch 30 phút trước
-            if (minutesUntilStart == 30) {
+            // Gửi nhắc lịch 30 phút trước (tolerance ±1 phút)
+            if (minutesUntilStart >= 29 && minutesUntilStart <= 31) {
                 sendMeetingReminder(booking, 30);
+                remindersSent++;
             }
 
-            // Gửi nhắc lịch 15 phút trước
-            if (minutesUntilStart == 15) {
+            // Gửi nhắc lịch 15 phút trước (tolerance ±1 phút)
+            if (minutesUntilStart >= 14 && minutesUntilStart <= 16) {
                 sendMeetingReminder(booking, 15);
+                remindersSent++;
             }
 
-            // Gửi nhắc lịch 5 phút trước
-            if (minutesUntilStart == 5) {
+            // Gửi nhắc lịch 5 phút trước (tolerance ±1 phút)
+            if (minutesUntilStart >= 4 && minutesUntilStart <= 6) {
                 sendMeetingReminder(booking, 5);
+                remindersSent++;
             }
+        }
+
+        if (remindersSent > 0) {
+            log.info("Sent {} meeting reminders", remindersSent);
         }
     }
 
@@ -303,4 +337,27 @@ public class NotificationServiceImpl implements NotifcationService {
                     .build();
         }
     }
+
+    /**
+     * Gửi thông báo hàng loạt cho nhiều user cùng lúc (tối ưu hiệu suất)
+     */
+    public void sendBulkNotifications(List<User> users, String title, String message, Booking booking) {
+        int successCount = 0;
+        int failureCount = 0;
+        
+        for (User user : users) {
+            try {
+                sendNotificationToUser(user, title, message, booking);
+                successCount++;
+            } catch (Exception e) {
+                failureCount++;
+                log.error("Failed to send notification to user {}: {}", user.getEmail(), e.getMessage());
+            }
+        }
+        
+        if (failureCount > 0) {
+            log.warn("Bulk notification summary: {} success, {} failures", successCount, failureCount);
+        }
+    }
+
 }
